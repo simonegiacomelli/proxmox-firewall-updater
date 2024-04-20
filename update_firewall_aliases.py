@@ -82,7 +82,7 @@ def update_aliases(deps: Dependencies):
     domain_entries = deps.domains_list()
 
     if deps.verbose:
-        log(f'found {len(domain_entries)} domain entries')
+        log(f'found {len(domain_entries)} domain entries. dry-run={deps.dry_run}')
 
     for domain_entry in domain_entries:
         _update_domain_entry(domain_entry, deps)
