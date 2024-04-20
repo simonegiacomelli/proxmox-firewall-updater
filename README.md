@@ -11,7 +11,13 @@ the script will not automatically remove it.
 
 # Installation
 
-Copy the script to your Proxmox server and add a cron job to run it periodically.
+Get the script to your Proxmox server and add a cron job to run it periodically.
+
+```
+curl -o update_firewall_aliases.py https://raw.githubusercontent.com/simonegiacomelli/proxmox-firewall-updater/main/update_firewall_aliases.py
+```
+
+
 
 The following command will add a cron job to run the script every 5 minutes:
 
