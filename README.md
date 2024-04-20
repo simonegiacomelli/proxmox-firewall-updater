@@ -59,9 +59,6 @@ alias_example_com = example.com
 
 [//]: # (`update_firewall_aliases.py -ini /root/my_custom_config.ini`)
 
-## Proxmox Forum Interesting thread
-[Firewall Alias with Domainname](https://forum.proxmox.com/threads/firewall-alias-with-domainname.43036/)
-
 # Documentation of internal workings
 
 This script uses `pvesh` commands to get/create/set pve firewall aliases.
