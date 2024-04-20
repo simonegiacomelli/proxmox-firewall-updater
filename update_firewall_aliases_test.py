@@ -55,29 +55,34 @@ class DependenciesFake(Dependencies):
 
 class update_domain_entry_TestCase(unittest.TestCase):
 
+    def setUp(self) -> None:
+        self.deps = DependenciesFake()
+
+    def tearDown(self) -> None:
+        pass
+
     def test_existing_entry__should_be_changed(self):
         # GIVEN
-        deps = DependenciesFake()
-        deps.alias_entries['alias_example_com'] = AliasEntry(name='alias_example_com', cidr='0.0.0.0', comment='com1')
-        deps.dns_entries['example.com'] = '1.2.3.4'
+        self.deps.alias_entries['alias_example_com'] = AliasEntry(name='alias_example_com', cidr='0.0.0.0',
+                                                                  comment='com1')
+        self.deps.dns_entries['example.com'] = '1.2.3.4'
 
         # WHEN
-        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com'), deps)
+        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com'), self.deps)
 
         # THEN
         expect = AliasEntry(name='alias_example_com', cidr='1.2.3.4', comment='com1')
-        actual = deps.alias_entries['alias_example_com']
+        actual = self.deps.alias_entries['alias_example_com']
         self.assertEqual(expect, actual)
 
     def test_non_existing_entry__should_be_created(self):
         # GIVEN
-        deps = DependenciesFake()
-        deps.dns_entries['example.com'] = '5.6.7.8'
+        self.deps.dns_entries['example.com'] = '5.6.7.8'
 
         # WHEN
-        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com'), deps)
+        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com'), self.deps)
 
         # THEN
         expect = AliasEntry(name='alias_example_com', cidr='5.6.7.8', comment=DEFAULT_COMMENT)
-        actual = deps.alias_entries['alias_example_com']
+        actual = self.deps.alias_entries['alias_example_com']
         self.assertEqual(expect, actual)
