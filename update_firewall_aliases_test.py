@@ -63,8 +63,7 @@ class update_domain_entry_TestCase(unittest.TestCase):
 
     def test_existing_entry__should_be_changed(self):
         # GIVEN
-        self.deps.alias_entries['alias_example_com'] = AliasEntry(name='alias_example_com', cidr='0.0.0.0',
-                                                                  comment='com1')
+        self.deps.alias_set(AliasEntry(name='alias_example_com', cidr='0.0.0.0', comment='com1'))
         self.deps.dns_entries['example.com'] = '1.2.3.4'
 
         # WHEN
@@ -72,7 +71,7 @@ class update_domain_entry_TestCase(unittest.TestCase):
 
         # THEN
         expect = AliasEntry(name='alias_example_com', cidr='1.2.3.4', comment='com1')
-        actual = self.deps.alias_entries['alias_example_com']
+        actual = self.deps.alias_get('alias_example_com')
         self.assertEqual(expect, actual)
 
     def test_non_existing_entry__should_be_created(self):
@@ -84,5 +83,5 @@ class update_domain_entry_TestCase(unittest.TestCase):
 
         # THEN
         expect = AliasEntry(name='alias_example_com', cidr='5.6.7.8', comment=DEFAULT_COMMENT)
-        actual = self.deps.alias_entries['alias_example_com']
+        actual = self.deps.alias_get('alias_example_com')
         self.assertEqual(expect, actual)
