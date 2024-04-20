@@ -150,9 +150,9 @@ class ProdDependencies(Dependencies):
     def dns_resolve(self, domain: str) -> str | None:
         try:
             (_, _, ipaddrlist) = socket.gethostbyname_ex(domain)
+            if self.verbose:
+                log(f'{domain} resolved to `{ipaddrlist}`; using the first if present')
             if len(ipaddrlist) > 0:
-                if self.verbose:
-                    log(f'{domain} resolved to {ipaddrlist[0]}')
                 return ipaddrlist[0]
         except:
             return None
