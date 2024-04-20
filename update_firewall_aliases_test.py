@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import unittest
-from pathlib import Path
 from typing import Dict
 
 from update_firewall_aliases import DomainEntry, domain_to_alias_list, update_domain_entry, Dependencies, AliasEntry, \
