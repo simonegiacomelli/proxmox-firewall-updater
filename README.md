@@ -29,7 +29,7 @@ The description of the alias will be reused, if the alias already exists.
 Example of a configuration file:
 
 ```
-[domain to alias]
+[alias to domain]
 example.com = alias_example_com
 ```
 
