@@ -55,5 +55,6 @@ def update_domain_entry(domain_entry: DomainEntry, deps: Dependencies):
         new_alias = AliasEntry(name=domain_entry.alias, cidr=ip, comment=DEFAULT_COMMENT)
         deps.alias_create(new_alias)
     else:
-        new_alias = AliasEntry(name=alias.name, cidr=ip, comment=alias.comment)
-        deps.alias_set(new_alias)
+        if alias.cidr != ip:
+            new_alias = AliasEntry(name=alias.name, cidr=ip, comment=alias.comment)
+            deps.alias_set(new_alias)
