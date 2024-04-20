@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict
 
 from update_firewall_aliases import DomainEntry, domain_to_alias_list, update_domain_entry, Dependencies, AliasEntry, \
-    SECTION_NAME
+    SECTION_NAME, DEFAULT_COMMENT
 
 
 class DomainToAliasList_TestCase(unittest.TestCase):
@@ -44,7 +44,7 @@ class DependenciesFake(Dependencies):
         return self.alias_entries.get(name, None)
 
     def alias_create(self, alias: AliasEntry):
-        pass
+        self.alias_entries[alias.name] = alias
 
     def alias_set(self, alias: AliasEntry):
         self.alias_entries[alias.name] = alias
@@ -62,9 +62,22 @@ class update_domain_entry_TestCase(unittest.TestCase):
         deps.dns_entries['example.com'] = '1.2.3.4'
 
         # WHEN
-        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com', ip='1.2.3.4'), deps)
+        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com'), deps)
 
         # THEN
         expect = AliasEntry(name='alias_example_com', cidr='1.2.3.4', comment='com1')
+        actual = deps.alias_entries['alias_example_com']
+        self.assertEqual(expect, actual)
+
+    def test_non_existing_entry__should_be_created(self):
+        # GIVEN
+        deps = DependenciesFake()
+        deps.dns_entries['example.com'] = '5.6.7.8'
+
+        # WHEN
+        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com'), deps)
+
+        # THEN
+        expect = AliasEntry(name='alias_example_com', cidr='5.6.7.8', comment=DEFAULT_COMMENT)
         actual = deps.alias_entries['alias_example_com']
         self.assertEqual(expect, actual)

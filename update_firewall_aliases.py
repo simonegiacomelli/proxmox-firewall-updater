@@ -66,7 +66,12 @@ def domain_to_alias_list(ini_content: str) -> List[DomainEntry]:
 
 
 def update_domain_entry(domain_entry: DomainEntry, deps: Dependencies):
-    alias = deps.alias_get(domain_entry.alias)
     ip = deps.dns_resolve(domain_entry.domain)
-    new_alias = AliasEntry(name=alias.name, cidr=ip, comment=alias.comment)
-    deps.alias_set(new_alias)
+    alias = deps.alias_get(domain_entry.alias)
+
+    if alias is None:
+        new_alias = AliasEntry(name=domain_entry.alias, cidr=ip, comment=DEFAULT_COMMENT)
+        deps.alias_create(new_alias)
+    else:
+        new_alias = AliasEntry(name=alias.name, cidr=ip, comment=alias.comment)
+        deps.alias_set(new_alias)
