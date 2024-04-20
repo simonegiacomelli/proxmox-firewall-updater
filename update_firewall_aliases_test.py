@@ -51,6 +51,7 @@ class DomainToAliasList_TestCase(unittest.TestCase):
 class DependenciesFake(Dependencies):
 
     def __init__(self):
+        super().__init__()
         self.alias_get_count = 0
         self.alias_entries: Dict[str, AliasEntry] = {}
         self.dns_entries: Dict[str, str] = {}
