@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# for more information see https://github.com/simonegiacomelli/proxmox-firewall-updater
+
 from __future__ import annotations
 
 import argparse
