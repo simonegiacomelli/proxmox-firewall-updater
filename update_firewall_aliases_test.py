@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from typing import Dict
 
-from update_firewall_aliases import DomainEntry, domain_to_alias_list, Dependencies, AliasEntry, \
+from update_firewall_aliases import DomainEntry, domains_list, Dependencies, AliasEntry, \
     SECTION_NAME, DEFAULT_COMMENT, update_aliases
 
 
@@ -23,10 +23,10 @@ class DomainToAliasList_TestCase(unittest.TestCase):
     def test_two_valid_entries(self):
         self.ini.write_text("\n"
                             f"[{SECTION_NAME}]\n"
-                            "example.com = alias_example_com\n"
-                            "foo.org = alias_foo_rog\n")
+                            "alias_example_com = example.com\n"
+                            "alias_foo_rog=foo.org\n")
 
-        result = domain_to_alias_list(self.ini)
+        result = domains_list(self.ini)
 
         self.assertEqual(result, [
             DomainEntry(domain='example.com', alias='alias_example_com'),
@@ -35,16 +35,16 @@ class DomainToAliasList_TestCase(unittest.TestCase):
 
     def test_empty_ini(self):
         self.ini.write_text('')
-        result = domain_to_alias_list(self.ini)
+        result = domains_list(self.ini)
         self.assertEqual(result, [])
 
     def test_wrong_section_should_be_ignored(self):
         self.ini.write_text('[some section foobar]\nexample.com = alias_example_com\n')
-        result = domain_to_alias_list(self.ini)
+        result = domains_list(self.ini)
         self.assertEqual(result, [])
 
     def test_file_do_not_exist(self):
-        result = domain_to_alias_list(self.ini)
+        result = domains_list(self.ini)
         self.assertEqual(result, [])
 
 

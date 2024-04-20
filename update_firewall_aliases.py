@@ -49,17 +49,18 @@ class Dependencies:
     def dns_resolve(self, domain: str) -> str | None: ...
 
 
-def domain_to_alias_list(ini_path: Path) -> List[DomainEntry]:
+def domains_list(ini_path: Path) -> List[DomainEntry]:
     config = configparser.ConfigParser()
     if not ini_path.exists():
         return []
     config.read_string(ini_path.read_text())
     if SECTION_NAME not in config:
         return []
-    domain = []
+    entries = []
     for key in config[SECTION_NAME]:
-        domain.append(DomainEntry(domain=key, alias=config[SECTION_NAME][key]))
-    return domain
+        domain = config[SECTION_NAME][key]
+        entries.append(DomainEntry(domain=domain, alias=key))
+    return entries
 
 
 def _update_domain_entry(domain_entry: DomainEntry, deps: Dependencies):
@@ -119,7 +120,7 @@ class ProdDependencies(Dependencies):
         self.dry_run = args.dry_run
 
     def domains_list(self) -> List[DomainEntry]:
-        return domain_to_alias_list(ini_path)
+        return domains_list(ini_path)
 
     def alias_get(self, name: str) -> AliasEntry | None:
         cmd = f'pvesh get cluster/firewall/aliases/{name} --output-format json'.split(' ')
