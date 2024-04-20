@@ -23,25 +23,6 @@ class AliasEntry:
     cidr: str
     comment: str
 
-
-@dataclass(frozen=True)
-class ActionResult:
-    success: bool
-    message: str
-    alias: AliasEntry | None
-
-
-class ActionType(Enum):
-    CREATE = "create"
-    SET = "set"
-
-
-@dataclass(frozen=True)
-class Action:
-    action: str
-    domain_entry: DomainEntry
-
-
 class Dependencies:
     """Interface for managing actions on pve firewall aliases and dns entries."""
 
@@ -67,6 +48,8 @@ def domain_to_alias_list(ini_content: str) -> List[DomainEntry]:
 
 def update_domain_entry(domain_entry: DomainEntry, deps: Dependencies):
     ip = deps.dns_resolve(domain_entry.domain)
+    if ip is None:
+        return
     alias = deps.alias_get(domain_entry.alias)
 
     if alias is None:

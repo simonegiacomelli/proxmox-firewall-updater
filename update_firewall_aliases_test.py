@@ -37,10 +37,12 @@ class DomainToAliasList_TestCase(unittest.TestCase):
 class DependenciesFake(Dependencies):
 
     def __init__(self):
+        self.alias_get_count = 0
         self.alias_entries: Dict[str, AliasEntry] = {}
         self.dns_entries: Dict[str, str] = {}
 
     def alias_get(self, name: str) -> AliasEntry | None:
+        self.alias_get_count += 1
         return self.alias_entries.get(name, None)
 
     def alias_create(self, alias: AliasEntry):
@@ -85,3 +87,14 @@ class update_domain_entry_TestCase(unittest.TestCase):
         expect = AliasEntry(name='alias_example_com', cidr='5.6.7.8', comment=DEFAULT_COMMENT)
         actual = self.deps.alias_get('alias_example_com')
         self.assertEqual(expect, actual)
+
+    def test_no_dns__should_not_create_the_alias(self):
+        # GIVEN
+        # no dns
+
+        # WHEN
+        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com'), self.deps)
+
+        # THEN
+        self.assertEqual(0, self.deps.alias_get_count)
+        self.assertIsNone(self.deps.alias_get('alias_example_com'))
