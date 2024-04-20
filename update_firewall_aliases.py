@@ -156,7 +156,7 @@ class ProdDependencies(Dependencies):
 
     def _run(self, cmd, skip: bool) -> Run | None:
         if self.verbose:
-            dr = 'executing:' if self.dry_run else 'dry-run:'
+            dr = 'dry-run:' if self.dry_run else 'executing:'
             log(f'{dr} {shlex.join(cmd)}')
         if not skip:
             run = Run(cmd)
