@@ -1,6 +1,8 @@
 # proxmox-firewall-updater
 This script facilitates automatic updates to firewall aliases based on DNS entries, enabling dynamic FQDN firewall rules in Proxmox environments. It's designed to ensure that firewall configurations remain synchronized with DNS changes, enhancing security and network management.
 
+The alias will only be updated if the IP address of the corresponding domain name changes.
+
 Please note that this script is designed to create and update firewall aliases based on the configuration file, but it does not delete any existing entries. 
 If an entry in the firewall aliases is no longer needed or if it's not present in the configuration file, 
 the script will not automatically remove it. 
@@ -30,12 +32,12 @@ Example of a configuration file:
 
 ```
 [alias to domain]
-example.com = alias_example_com
+alias_example_com = example.com 
 ```
 
-You can specify the full path of the configuration file using `-ini` option.
+[//]: # (You can specify the full path of the configuration file using `-ini` option.)
 
-`update_firewall_aliases.py -ini /root/my_custom_config.ini`
+[//]: # (`update_firewall_aliases.py -ini /root/my_custom_config.ini`)
 
 
 ## Proxmox Forum Interesting thread
