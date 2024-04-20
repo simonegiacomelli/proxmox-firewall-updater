@@ -7,6 +7,20 @@ Please note that this script is designed to create and update firewall aliases b
 If an entry in the firewall aliases is no longer needed or if it's not present in the configuration file, 
 the script will not automatically remove it. 
 
+## Command Line Options
+
+This script supports two command line options: `--dry-run` and `--verbose`, both optional.
+
+- `--dry-run`: Runs the script without making any changes, useful for testing and debugging.
+- `--verbose`: Provides detailed logging of operations, aiding in understanding the script's behavior and troubleshooting.
+
+You can use both options together for a detailed dry run:
+
+```bash
+python3 update_firewall_aliases.py --dry-run --verbose
+```
+
+In this mode, the script will print detailed logs of what it would do, without actually making any changes.
 
 
 # Installation
@@ -23,7 +37,6 @@ The following command will add a cron job to run the script every 5 minutes:
 ```
 (crontab -l 2>/dev/null; echo "*/5 * * * * /usr/bin/env python3 $(pwd)/update_firewall_aliases.py") | crontab -
 ```
-
 
 # Configuration
 
@@ -43,7 +56,6 @@ alias_example_com = example.com
 [//]: # (You can specify the full path of the configuration file using `-ini` option.)
 
 [//]: # (`update_firewall_aliases.py -ini /root/my_custom_config.ini`)
-
 
 ## Proxmox Forum Interesting thread
 [Firewall Alias with Domainname](https://forum.proxmox.com/threads/firewall-alias-with-domainname.43036/)
