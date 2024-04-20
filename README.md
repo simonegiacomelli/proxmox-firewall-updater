@@ -1,6 +1,12 @@
 # proxmox-firewall-updater
 This script facilitates automatic updates to firewall aliases based on DNS entries, enabling dynamic FQDN firewall rules in Proxmox environments. It's designed to ensure that firewall configurations remain synchronized with DNS changes, enhancing security and network management.
 
+Please note that this script is designed to create and update firewall aliases based on the configuration file, but it does not delete any existing entries. 
+If an entry in the firewall aliases is no longer needed or if it's not present in the configuration file, 
+the script will not automatically remove it. 
+
+
+
 # Installation
 
 Copy the script to your Proxmox server and add a cron job to run it periodically.
