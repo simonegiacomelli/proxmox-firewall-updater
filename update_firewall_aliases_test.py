@@ -24,3 +24,8 @@ class FunctionsTestCase(unittest.TestCase):
         ini_content = ""
         result = domain_to_alias_list(ini_content)
         self.assertEqual(result, [])
+
+    def test_domain_to_alias_list__wrong_section_should_be_ignored(self):
+        ini_content = "[some section]\nexample.com = alias_example_com\n"
+        result = domain_to_alias_list(ini_content)
+        self.assertEqual(result, [])
