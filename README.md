@@ -42,7 +42,7 @@ It will also log the output of the script to the system log using the `logger` c
 
 # Configuration
 
-The default configuration file is named `update_firewall_aliases.ini` and it is searched in the same folder as the script.
+The default configuration file is named `firewall_aliases.ini` and it is searched in the same folder as the script.
 
 The configuration file is in INI format and contains a list of DNS names and their corresponding firewall aliases.
 The script will create or update the firewall aliases based on the configuration file.
