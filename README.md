@@ -31,12 +31,14 @@ Get the script to your Proxmox server and add a cron job to run it periodically.
 curl https://raw.githubusercontent.com/simonegiacomelli/proxmox-firewall-updater/main/update_firewall_aliases.py -o update_firewall_aliases.py
 ```
 
-
-The following command will add a cron job to run the script every 5 minutes:
+The following command will add a cron job to run the script every 5 minutes. 
+It will also log the output of the script to the system log using the `logger` command.
 
 ```
-(crontab -l 2>/dev/null; echo "*/5 * * * * /usr/bin/env python3 $(pwd)/update_firewall_aliases.py") | crontab -
+(crontab -l 2>/dev/null; echo "*/5 * * * * /usr/bin/env python3 $(pwd)/update_firewall_aliases.py 2>&1 | logger -t update_firewall_aliases.py") | crontab -
 ```
+
+
 
 # Configuration
 
