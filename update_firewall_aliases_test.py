@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import tempfile
 import unittest
+from pathlib import Path
 from typing import Dict
 
 from update_firewall_aliases import DomainEntry, domain_to_alias_list, Dependencies, AliasEntry, \
@@ -10,12 +12,21 @@ from update_firewall_aliases import DomainEntry, domain_to_alias_list, Dependenc
 
 class DomainToAliasList_TestCase(unittest.TestCase):
 
+    def setUp(self) -> None:
+        self.ini = Path(tempfile.mkstemp(prefix='test_', suffix='.ini')[1])
+        self.ini.unlink()
+
+    def tearDown(self) -> None:
+        if self.ini.exists():
+            self.ini.unlink()
+
     def test_two_valid_entries(self):
-        ini_content = ("\n"
-                       f"[{SECTION_NAME}]\n"
-                       "example.com = alias_example_com\n"
-                       "foo.org = alias_foo_rog\n")
-        result = domain_to_alias_list(ini_content)
+        self.ini.write_text("\n"
+                            f"[{SECTION_NAME}]\n"
+                            "example.com = alias_example_com\n"
+                            "foo.org = alias_foo_rog\n")
+
+        result = domain_to_alias_list(self.ini)
 
         self.assertEqual(result, [
             DomainEntry(domain='example.com', alias='alias_example_com'),
@@ -23,13 +34,17 @@ class DomainToAliasList_TestCase(unittest.TestCase):
         ])
 
     def test_empty_ini(self):
-        ini_content = ""
-        result = domain_to_alias_list(ini_content)
+        self.ini.write_text('')
+        result = domain_to_alias_list(self.ini)
         self.assertEqual(result, [])
 
     def test_wrong_section_should_be_ignored(self):
-        ini_content = "[some section foobar]\nexample.com = alias_example_com\n"
-        result = domain_to_alias_list(ini_content)
+        self.ini.write_text('[some section foobar]\nexample.com = alias_example_com\n')
+        result = domain_to_alias_list(self.ini)
+        self.assertEqual(result, [])
+
+    def test_file_do_not_exist(self):
+        result = domain_to_alias_list(self.ini)
         self.assertEqual(result, [])
 
 
