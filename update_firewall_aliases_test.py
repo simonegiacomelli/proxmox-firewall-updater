@@ -4,8 +4,8 @@ from __future__ import annotations
 import unittest
 from typing import Dict
 
-from update_firewall_aliases import DomainEntry, domain_to_alias_list, update_domain_entry, Dependencies, AliasEntry, \
-    SECTION_NAME, DEFAULT_COMMENT
+from update_firewall_aliases import DomainEntry, domain_to_alias_list, Dependencies, AliasEntry, \
+    SECTION_NAME, DEFAULT_COMMENT, update_aliases
 
 
 class DomainToAliasList_TestCase(unittest.TestCase):
@@ -39,6 +39,10 @@ class DependenciesFake(Dependencies):
         self.alias_get_count = 0
         self.alias_entries: Dict[str, AliasEntry] = {}
         self.dns_entries: Dict[str, str] = {}
+        self.domains_entries = []
+
+    def domains_list(self) -> list[DomainEntry]:
+        return self.domains_entries
 
     def alias_get(self, name: str) -> AliasEntry | None:
         self.alias_get_count += 1
@@ -64,11 +68,12 @@ class update_domain_entry_TestCase(unittest.TestCase):
 
     def test_existing_entry__should_be_changed(self):
         # GIVEN
-        self.deps.alias_set(AliasEntry(name='alias_example_com', cidr='0.0.0.0', comment='com1'))
+        self.deps.domains_entries.append(DomainEntry(domain='example.com', alias='alias_example_com'))
         self.deps.dns_entries['example.com'] = '1.2.3.4'
+        self.deps.alias_set(AliasEntry(name='alias_example_com', cidr='0.0.0.0', comment='com1'))
 
         # WHEN
-        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com'), self.deps)
+        update_aliases(self.deps)
 
         # THEN
         expect = AliasEntry(name='alias_example_com', cidr='1.2.3.4', comment='com1')
@@ -77,12 +82,13 @@ class update_domain_entry_TestCase(unittest.TestCase):
 
     def test_existing_entry__should_be_changed_only_if_dns_changes(self):
         # GIVEN
+        self.deps.domains_entries.append(DomainEntry(domain='example.com', alias='alias_example_com'))
         entry = AliasEntry(name='alias_example_com', cidr='1.2.3.4', comment='com1')
         self.deps.alias_set(entry)
         self.deps.dns_entries['example.com'] = '1.2.3.4'
 
         # WHEN
-        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com'), self.deps)
+        update_aliases(self.deps)
 
         # THEN
         actual = self.deps.alias_get('alias_example_com')
@@ -91,9 +97,10 @@ class update_domain_entry_TestCase(unittest.TestCase):
     def test_non_existing_entry__should_be_created(self):
         # GIVEN
         self.deps.dns_entries['example.com'] = '5.6.7.8'
+        self.deps.domains_entries.append(DomainEntry(domain='example.com', alias='alias_example_com'))
 
         # WHEN
-        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com'), self.deps)
+        update_aliases(self.deps)
 
         # THEN
         expect = AliasEntry(name='alias_example_com', cidr='5.6.7.8', comment=DEFAULT_COMMENT)
@@ -102,10 +109,11 @@ class update_domain_entry_TestCase(unittest.TestCase):
 
     def test_no_dns__should_not_create_the_alias(self):
         # GIVEN
-        # no dns
+        self.deps.domains_entries.append(DomainEntry(domain='example.com', alias='alias_example_com'))
+        # no dns entry
 
         # WHEN
-        update_domain_entry(DomainEntry(domain='example.com', alias='alias_example_com'), self.deps)
+        update_aliases(self.deps)
 
         # THEN
         self.assertEqual(0, self.deps.alias_get_count)

@@ -22,8 +22,11 @@ class AliasEntry:
     cidr: str
     comment: str
 
+
 class Dependencies:
     """Interface for managing actions on pve firewall aliases and dns entries."""
+
+    def domains_list(self) -> List[DomainEntry]: ...
 
     def alias_get(self, name: str) -> AliasEntry | None: ...
 
@@ -45,7 +48,7 @@ def domain_to_alias_list(ini_content: str) -> List[DomainEntry]:
     return domain
 
 
-def update_domain_entry(domain_entry: DomainEntry, deps: Dependencies):
+def _update_domain_entry(domain_entry: DomainEntry, deps: Dependencies):
     ip = deps.dns_resolve(domain_entry.domain)
     if ip is None:
         return
@@ -58,3 +61,8 @@ def update_domain_entry(domain_entry: DomainEntry, deps: Dependencies):
         if alias.cidr != ip:
             new_alias = AliasEntry(name=alias.name, cidr=ip, comment=alias.comment)
             deps.alias_set(new_alias)
+
+
+def update_aliases(deps: Dependencies):
+    for domain_entry in deps.domains_list():
+        _update_domain_entry(domain_entry, deps)
