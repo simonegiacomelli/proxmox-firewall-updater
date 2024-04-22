@@ -2,7 +2,11 @@
 
 The Proxmox Firewall Updater is a Python script designed to automate the process of updating firewall aliases based on DNS entries. This ensures that firewall configurations remain synchronized with DNS changes, enhancing security and network management in Proxmox environments.
 
-The script only updates an alias if the IP address of the corresponding domain name changes. It's important to note that while the script creates and updates firewall aliases based on the configuration file, it does not delete any existing entries. If an entry in the firewall aliases is no longer needed or if it's not present in the configuration file, the script will not automatically remove it.
+The script only updates an alias if the IP address of the corresponding domain name changes.
+
+The configuration of the firewall aliases to update is done by adding a comment to the alias with the domain name to resolve. 
+
+For example, an alias with the comment `#resolve: example.com` will be updated with the IP address of `example.com`.
 
 ## Installation
 
@@ -22,23 +26,12 @@ You can add a cron job to run the script every 5 minutes. The output of the scri
 
 ### Scheduling without Cron
 
-If you prefer to avoid cron job logs, you can create a script with a loop that runs the script every 5 minutes. To activate this script, add it to the @reboot cron job:
+If you prefer to avoid verbose cron job logs, you can create a script with a loop that runs the script every 5 minutes. To activate this script, add it to the @reboot cron job:
 
 ```bash
 echo "while true; do (python3 $(pwd)/update_firewall_aliases.py | logger -t update_firewall_aliases.py); sleep 300; done" > firewall_aliases_updater_forever.sh
 chmod +x firewall_aliases_updater_forever.sh
 (crontab -l 2>/dev/null; echo "@reboot /bin/bash -c $(pwd)/firewall_aliases_updater_forever.sh &") | crontab -
-```
-
-## Configuration
-
-The configuration file is `firewall_aliases.ini` and must be located in the same folder as the script. This INI file contains a list of DNS names and their corresponding firewall aliases. The script will create or update the firewall aliases based on this configuration file. If an alias already exists, its description will be reused.
-
-Here's an example of a configuration file:
-
-```ini
-[alias to domain]
-alias_example_com = example.com
 ```
 
 ## Command Line Options
@@ -76,25 +69,14 @@ python3 -m unittest update_firewall_aliases_test.py
 The script uses `pvesh` commands to get, create, and set Proxmox VE firewall aliases. For more details, refer to the Proxmox VE API documentation.
 
 ### pvesh get
-Get a single alias by name:
+Get aliases:
 
-`pvesh get cluster/firewall/aliases/alias_example_com --output-format json`
+`pvesh get cluster/firewall/aliases --output-format json`
 
 Example output:
 
 ```json
-{"cidr":"1.2.3.4","comment":"dynamic ip for example.com","ipversion":4,"name":"alias_example_com"}
-```
-
-### pvesh create
-`pvesh create cluster/firewall/aliases -name alias_example_com -cidr 1.2.3.4 -comment "created by proxmox-firewall-updater"`
-- If it succeeds, it will return empty output and 0 exit code.
-- If it fails, it will return error message and non-zero exit code.
-Example output:
-```
-400 Parameter verification failed.
-name: alias 'alias_example_com' already exists
-... (truncated for brevity)
+[{"cidr":"1.2.3.4","comment":"comment foo #resolve: example.com","digest":"48ba54e4cabe338b1cb490bb9c5b617f61bd4212","ipversion":4,"name":"alias_example_com"},{"cidr":"0.0.0.0","comment":"comment bar #resolve: example.net","digest":"48ba54e4cabe338b1cb490bb9c5b617f61bd4212","ipversion":4,"name":"alias_example_net"}]
 ```
 
 ### pvesh set
