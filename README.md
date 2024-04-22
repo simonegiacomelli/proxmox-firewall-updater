@@ -10,7 +10,7 @@ For example, an alias with the comment `#resolve: example.com` will be updated w
 
 You can also add a comment, like in the image above.
 
-The script only updates an alias if the IP address of the corresponding domain name changes.
+The script only updates an alias if the IP address of the corresponding domain name changes in order to minimize logging.
 
 
 ## Installation
