@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-VERSION_STRING = f'{Path(__file__).name} version 2.0.0'
+VERSION_STRING = f'{Path(__file__).name} version 2.0.1'
 
 
 @dataclass(frozen=True)
