@@ -2,13 +2,15 @@
 
 The Proxmox Firewall Updater is a Python script designed to automate the process of updating firewall aliases based on DNS entries. This ensures that firewall configurations remain synchronized with DNS changes, enhancing security and network management in Proxmox environments.
 
-The script only updates an alias if the IP address of the corresponding domain name changes.
-
 The configuration of the firewall aliases to update is done by adding a comment to the alias with the domain name to resolve. 
 
 For example, an alias with the comment `#resolve: example.com` will be updated with the IP address of `example.com`.
 
 <img width="397" alt="image" src="https://github.com/simonegiacomelli/proxmox-firewall-updater/assets/3785783/85518007-756c-4804-b0a5-925b88330e02">
+
+You can also add a comment, like in the image above.
+
+The script only updates an alias if the IP address of the corresponding domain name changes.
 
 
 ## Installation
@@ -27,9 +29,13 @@ You can add a cron job to run the script every 5 minutes. The output of the scri
 (crontab -l 2>/dev/null; echo "*/5 * * * * /usr/bin/env python3 $(pwd)/update_firewall_aliases.py 2>&1 | logger -t update_firewall_aliases.py") | crontab -
 ```
 
+The cron daemon will log the execution of the script to the system log which is usually too verbose. 
+If you want to avoid this, you can use the scheduling explained in the next section.
+
 ### Scheduling without Cron
 
-If you prefer to avoid verbose cron job logs, you can create a script with a loop that runs the script every 5 minutes. To activate this script, add it to the @reboot cron job:
+If you prefer to avoid verbose cron job logs, you can create a script with a loop that runs the script every 5 minutes. 
+To activate this script, add it to the @reboot cron job:
 
 ```bash
 echo "while true; do (python3 $(pwd)/update_firewall_aliases.py | logger -t update_firewall_aliases.py); sleep 300; done" > firewall_aliases_updater_forever.sh
@@ -59,9 +65,9 @@ In this mode, the script will print detailed logs of its intended actions withou
 
 This project includes comprehensive automated tests to ensure its reliability and correctness. These tests cover various scenarios and edge cases, providing a robust safety net for ongoing development.
 
-The tests are written using Python's built-in `unittest` module, and they thoroughly test the functionality of the script, including the parsing of the configuration file, DNS resolution, and the creation and updating of firewall aliases.
+The tests are written using Python's built-in `unittest` module, and they thoroughly test the functionality of the script, including the DNS resolution and the updating of firewall aliases.
 
-To run the tests, use the following command:
+To run the tests, clone the repo and use the following command:
 
 ```bash
 python3 -m unittest update_firewall_aliases_test.py
