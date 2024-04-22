@@ -34,7 +34,7 @@ If you want to avoid this, you can use the scheduling explained in the next sect
 
 ### Scheduling without Cron
 
-If you prefer to avoid verbose cron job logs, you can create a script with a loop that runs the script every 5 minutes. 
+If you prefer to avoid verbose cron job logs, you can create a bash script with a loop that runs the python script every 5 minutes. 
 To activate this script, add it to the @reboot cron job:
 
 ```bash
@@ -43,8 +43,8 @@ chmod +x firewall_aliases_updater_forever.sh
 (crontab -l 2>/dev/null; echo "@reboot /bin/bash -c $(pwd)/firewall_aliases_updater_forever.sh &") | crontab -
 ```
 
-Beware that the script will be executed at every reboot.
-The first time, to avoid rebooting the server, you can run the script manually:
+Beware that the above will take effect at every reboot.
+The first time, to avoid rebooting the server, you can run the bash script manually:
 
 ```bash
 /bin/bash -c ./firewall_aliases_updater_forever.sh &
