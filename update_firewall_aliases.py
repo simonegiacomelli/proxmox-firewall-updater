@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-VERSION_STRING = f'{Path(__file__).name} version 2.0.3'
+VERSION_STRING = f'{Path(__file__).name} version 2.0.4'
 
 
 @dataclass(frozen=True)
@@ -53,7 +53,7 @@ def update_aliases(deps: Dependencies):
     if deps.verbose:
         log(f'found {len(aliases)} aliases to check. dry-run={deps.dry_run}')
         for alias_entry in aliases:
-            log(f'{alias_entry.name} {alias_entry.domain} cidr={alias_entry.cidr} {alias_entry.comment}')
+            log(f'{alias_entry.name} {alias_entry.domain()} cidr={alias_entry.cidr} {alias_entry.comment}')
 
     for alias_entry in aliases:
         ipaddr = deps.dns_resolve(alias_entry.domain())
@@ -92,7 +92,7 @@ class Run:
             f'{self.stdout}\n' \
             f'stderr: ------------------------------\n' \
             f'{self.stderr}' \
-            f'--------------------------------------\n'
+            f'end ----------------------------------\n'
 
 
 def alias_list_to_typed(alias_list: str) -> List[AliasEntry]:
