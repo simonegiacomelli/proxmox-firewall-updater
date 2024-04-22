@@ -43,6 +43,13 @@ chmod +x firewall_aliases_updater_forever.sh
 (crontab -l 2>/dev/null; echo "@reboot /bin/bash -c $(pwd)/firewall_aliases_updater_forever.sh &") | crontab -
 ```
 
+Beware that the script will be executed at every reboot.
+The first time, to avoid rebooting the server, you can run the script manually:
+
+```bash
+/bin/bash -c ./firewall_aliases_updater_forever.sh &
+```
+
 ## Command Line Options
 
 The script supports two optional command line options:
