@@ -28,6 +28,20 @@ class update_aliases_TestCase(unittest.TestCase):
         actual = self.deps.alias_entries['alias1']
         self.assertEqual(expect, actual)
 
+    def test_stale_entry_and_dry_run__should_not_change(self):
+        # GIVEN
+        self.deps.dry_run = True
+        alias_entry = AliasEntry(name='alias1', cidr='0.0.0.0', comment='#resolve: example.com')
+        self.deps.alias_set(alias_entry)
+        self.deps.dns_entries['example.com'] = '1.2.3.4'
+
+        # WHEN
+        update_aliases(self.deps)
+
+        # THEN
+        actual = self.deps.alias_entries['alias1']
+        self.assertIs(alias_entry, actual)
+
     def test_up_to_date_entry__should_be_changed_only_if_dns_changes(self):
         # GIVEN
         alias_entry = AliasEntry(name='alias1', cidr='0.0.0.0', comment='#resolve: example.com')
@@ -83,6 +97,7 @@ class DependenciesFake(Dependencies):
 
     def __init__(self):
         super().__init__()
+        self.dry_run = False
         self.alias_entries: Dict[str, AliasEntry] = {}
         self.dns_entries: Dict[str, str] = {}
         self.domains_entries = []

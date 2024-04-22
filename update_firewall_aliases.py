@@ -56,7 +56,8 @@ def update_aliases(deps: Dependencies):
         ip = deps.dns_resolve(alias_entry.domain())
         if ip and ip != alias_entry.cidr:
             log(f'updating alias {alias_entry.name} from {alias_entry.cidr} to {ip}')
-            deps.alias_set(AliasEntry(name=alias_entry.name, cidr=ip, comment=alias_entry.comment))
+            if not deps.dry_run:
+                deps.alias_set(AliasEntry(name=alias_entry.name, cidr=ip, comment=alias_entry.comment))
         else:
             if deps.verbose:
                 log(f'cannot resolve domain `{alias_entry.domain()}` for alias `{alias_entry.name}`')
