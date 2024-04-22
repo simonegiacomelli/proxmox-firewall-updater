@@ -4,21 +4,6 @@ The Proxmox Firewall Updater is a Python script designed to automate the process
 
 The script only updates an alias if the IP address of the corresponding domain name changes. It's important to note that while the script creates and updates firewall aliases based on the configuration file, it does not delete any existing entries. If an entry in the firewall aliases is no longer needed or if it's not present in the configuration file, the script will not automatically remove it.
 
-## Command Line Options
-
-The script supports two optional command line options:
-
-- `--dry-run`: Executes the script without making any changes. This is useful for testing and debugging.
-- `--verbose`: Provides detailed logging of operations, which can aid in understanding the script's behavior and troubleshooting.
-
-You can use both options together for a detailed dry run:
-
-```bash
-python3 update_firewall_aliases.py --dry-run --verbose
-```
-
-In this mode, the script will print detailed logs of its intended actions without actually making any changes.
-
 ## Installation
 
 To get the script on your Proxmox server, use the following command:
@@ -41,7 +26,8 @@ If you prefer to avoid cron job logs, you can create a script with a loop that r
 
 ```bash
 echo "while true; do (python3 $(pwd)/update_firewall_aliases.py | logger -t update_firewall_aliases.py); sleep 300; done" > firewall_aliases_updater_forever.sh
-(crontab -l 2>/dev/null; echo "@reboot /bin/bash -c $(pwd)/firewall_aliases_updater_forever.sh") | crontab -
+chmod +x firewall_aliases_updater_forever.sh
+(crontab -l 2>/dev/null; echo "@reboot /bin/bash -c $(pwd)/firewall_aliases_updater_forever.sh &") | crontab -
 ```
 
 ## Configuration
@@ -54,6 +40,22 @@ Here's an example of a configuration file:
 [alias to domain]
 alias_example_com = example.com
 ```
+
+## Command Line Options
+
+The script supports two optional command line options:
+
+- `--dry-run`: Executes the script without making any changes. This is useful for testing and debugging.
+- `--verbose`: Provides detailed logging of operations, which can aid in understanding the script's behavior and troubleshooting.
+
+You can use both options together for a detailed dry run:
+
+```bash
+python3 update_firewall_aliases.py --dry-run --verbose
+```
+
+In this mode, the script will print detailed logs of its intended actions without actually making any changes.
+
 
 # Internal Workings
 
