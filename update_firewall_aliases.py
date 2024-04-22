@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-VERSION_STRING = f'{Path(__file__).name} version 2.0.2'
+VERSION_STRING = f'{Path(__file__).name} version 2.0.3'
 
 
 @dataclass(frozen=True)
@@ -86,8 +86,8 @@ class Run:
     def __str__(self):
         st = 'OK' if self.success else f'FAILED status={self.returncode}'
         return \
-            f'status={st}\n' \
             f'command={shlex.join(self.cmd)}\n' \
+            f'status={st}\n' \
             f'stdout: ------------------------------\n' \
             f'{self.stdout}\n' \
             f'stderr: ------------------------------\n' \
