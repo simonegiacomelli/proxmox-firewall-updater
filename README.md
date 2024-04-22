@@ -8,6 +8,9 @@ The configuration of the firewall aliases to update is done by adding a comment 
 
 For example, an alias with the comment `#resolve: example.com` will be updated with the IP address of `example.com`.
 
+<img width="397" alt="image" src="https://github.com/simonegiacomelli/proxmox-firewall-updater/assets/3785783/85518007-756c-4804-b0a5-925b88330e02">
+
+
 ## Installation
 
 To get the script on your Proxmox server, use the following command:
