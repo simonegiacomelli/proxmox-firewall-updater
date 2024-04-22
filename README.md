@@ -15,7 +15,7 @@ The script only updates an alias if the IP address of the corresponding domain n
 
 ## Installation
 
-To get the script on your Proxmox server, use the following command:
+To get the script on your Proxmox server, run the following command in your pve shell:
 
 ```bash
 curl https://raw.githubusercontent.com/simonegiacomelli/proxmox-firewall-updater/main/update_firewall_aliases.py -o update_firewall_aliases.py
