@@ -1,77 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import tempfile
 import unittest
-from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
-from update_firewall_aliases import DomainEntry, domains_list, Dependencies, AliasEntry, \
-    SECTION_NAME, DEFAULT_COMMENT, update_aliases
-
-
-class DomainToAliasList_TestCase(unittest.TestCase):
-
-    def setUp(self) -> None:
-        self.ini = Path(tempfile.mkstemp(prefix='test_', suffix='.ini')[1])
-        self.ini.unlink()
-
-    def tearDown(self) -> None:
-        if self.ini.exists():
-            self.ini.unlink()
-
-    def test_two_valid_entries(self):
-        self.ini.write_text("\n"
-                            f"[{SECTION_NAME}]\n"
-                            "alias_example_com = example.com\n"
-                            "alias_foo_rog=foo.org\n")
-
-        result = domains_list(self.ini)
-
-        self.assertEqual(result, [
-            DomainEntry(domain='example.com', alias='alias_example_com'),
-            DomainEntry(domain='foo.org', alias='alias_foo_rog')
-        ])
-
-    def test_empty_ini(self):
-        self.ini.write_text('')
-        result = domains_list(self.ini)
-        self.assertEqual(result, [])
-
-    def test_wrong_section_should_be_ignored(self):
-        self.ini.write_text('[some section foobar]\nexample.com = alias_example_com\n')
-        result = domains_list(self.ini)
-        self.assertEqual(result, [])
-
-    def test_file_do_not_exist(self):
-        result = domains_list(self.ini)
-        self.assertEqual(result, [])
-
-
-class DependenciesFake(Dependencies):
-
-    def __init__(self):
-        super().__init__()
-        self.alias_get_count = 0
-        self.alias_entries: Dict[str, AliasEntry] = {}
-        self.dns_entries: Dict[str, str] = {}
-        self.domains_entries = []
-
-    def domains_list(self) -> list[DomainEntry]:
-        return self.domains_entries
-
-    def alias_get(self, name: str) -> AliasEntry | None:
-        self.alias_get_count += 1
-        return self.alias_entries.get(name, None)
-
-    def alias_create(self, alias: AliasEntry):
-        self.alias_entries[alias.name] = alias
-
-    def alias_set(self, alias: AliasEntry):
-        self.alias_entries[alias.name] = alias
-
-    def dns_resolve(self, domain: str) -> str | None:
-        return self.dns_entries.get(domain, None)
+from update_firewall_aliases import Dependencies, AliasEntry, update_aliases
 
 
 class update_domain_entry_TestCase(unittest.TestCase):
@@ -82,55 +15,83 @@ class update_domain_entry_TestCase(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_existing_entry__should_be_changed(self):
+    def test_stale_entry__should_be_changed(self):
         # GIVEN
-        self.deps.domains_entries.append(DomainEntry(domain='example.com', alias='alias_example_com'))
-        self.deps.dns_entries['example.com'] = '1.2.3.4'
-        self.deps.alias_set(AliasEntry(name='alias_example_com', cidr='0.0.0.0', comment='com1'))
-
-        # WHEN
-        update_aliases(self.deps)
-
-        # THEN
-        expect = AliasEntry(name='alias_example_com', cidr='1.2.3.4', comment='com1')
-        actual = self.deps.alias_get('alias_example_com')
-        self.assertEqual(expect, actual)
-
-    def test_existing_entry__should_be_changed_only_if_dns_changes(self):
-        # GIVEN
-        self.deps.domains_entries.append(DomainEntry(domain='example.com', alias='alias_example_com'))
-        entry = AliasEntry(name='alias_example_com', cidr='1.2.3.4', comment='com1')
-        self.deps.alias_set(entry)
+        self.deps.alias_set(AliasEntry(name='alias1', cidr='0.0.0.0', comment='#resolve: example.com'))
         self.deps.dns_entries['example.com'] = '1.2.3.4'
 
         # WHEN
         update_aliases(self.deps)
 
         # THEN
-        actual = self.deps.alias_get('alias_example_com')
-        self.assertIs(entry, actual)
+        expect = AliasEntry(name='alias1', cidr='1.2.3.4', comment='#resolve: example.com')
+        actual = self.deps.alias_entries['alias1']
+        self.assertEqual(expect, actual)
 
-    def test_non_existing_entry__should_be_created(self):
+    def test_up_to_date_entry__should_be_changed_only_if_dns_changes(self):
         # GIVEN
-        self.deps.dns_entries['example.com'] = '5.6.7.8'
-        self.deps.domains_entries.append(DomainEntry(domain='example.com', alias='alias_example_com'))
+        alias_entry = AliasEntry(name='alias1', cidr='0.0.0.0', comment='#resolve: example.com')
+        self.deps.alias_set(alias_entry)
+        self.deps.dns_entries['example.com'] = '0.0.0.0'
 
         # WHEN
         update_aliases(self.deps)
 
         # THEN
-        expect = AliasEntry(name='alias_example_com', cidr='5.6.7.8', comment=DEFAULT_COMMENT)
-        actual = self.deps.alias_get('alias_example_com')
-        self.assertEqual(expect, actual)
+        self.assertIs(alias_entry, self.deps.alias_entries['alias1'])
 
-    def test_no_dns__should_not_create_the_alias(self):
+    def test_no_dns__should_not_change_the_alias(self):
         # GIVEN
-        self.deps.domains_entries.append(DomainEntry(domain='example.com', alias='alias_example_com'))
+        alias_entry = AliasEntry(name='alias1', cidr='0.0.0.0', comment='#resolve: example.com')
+        self.deps.alias_set(alias_entry)
         # no dns entry
 
         # WHEN
         update_aliases(self.deps)
 
         # THEN
-        self.assertEqual(0, self.deps.alias_get_count)
-        self.assertIsNone(self.deps.alias_get('alias_example_com'))
+        self.assertIs(alias_entry, self.deps.alias_entries['alias1'])
+
+    def test_confounders(self):
+        # GIVEN
+        comment = 'confounder 1 #resolve: 1-800-unicorn.party confounder 2'
+        self.deps.alias_set(AliasEntry(name='alias1', cidr='0.0.0.0', comment=comment))
+        self.deps.dns_entries['1-800-unicorn.party'] = '1.2.3.4'
+
+        # WHEN
+        update_aliases(self.deps)
+
+        # THEN
+        expect = AliasEntry(name='alias1', cidr='1.2.3.4', comment=comment)
+        actual = self.deps.alias_entries['alias1']
+        self.assertEqual(expect, actual)
+
+    def test_invalid__should_not_change_the_alias(self):
+        # GIVEN
+        comment = '#resolve: '
+        alias_entry = AliasEntry(name='alias1', cidr='0.0.0.0', comment=comment)
+        self.deps.alias_set(alias_entry)
+
+        # WHEN
+        update_aliases(self.deps)
+
+        # THEN
+        self.assertEqual(alias_entry, self.deps.alias_entries['alias1'])
+
+
+class DependenciesFake(Dependencies):
+
+    def __init__(self):
+        super().__init__()
+        self.alias_entries: Dict[str, AliasEntry] = {}
+        self.dns_entries: Dict[str, str] = {}
+        self.domains_entries = []
+
+    def alias_list(self) -> List[AliasEntry]:
+        return list(self.alias_entries.values())
+
+    def alias_set(self, alias: AliasEntry):
+        self.alias_entries[alias.name] = alias
+
+    def dns_resolve(self, domain: str) -> str | None:
+        return self.dns_entries.get(domain, None)
