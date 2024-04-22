@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-VERSION_STRING = f'{Path(__file__).name} version 2.0.1'
+VERSION_STRING = f'{Path(__file__).name} version 2.0.2'
 
 
 @dataclass(frozen=True)
@@ -87,11 +87,12 @@ class Run:
         st = 'OK' if self.success else f'FAILED status={self.returncode}'
         return \
             f'status={st}\n' \
-            f'command={" ".join(self.cmd)}\n' \
+            f'command={shlex.join(self.cmd)}\n' \
             f'stdout: ------------------------------\n' \
             f'{self.stdout}\n' \
             f'stderr: ------------------------------\n' \
-            f'{self.stderr}'
+            f'{self.stderr}' \
+            f'--------------------------------------\n'
 
 
 def alias_list_to_typed(alias_list: str) -> List[AliasEntry]:
@@ -130,9 +131,8 @@ class ProdDependencies(Dependencies):
             return None
 
     def _run(self, cmd, skip: bool) -> Run | None:
-        if self.verbose:
-            dr = 'dry-run:' if self.dry_run else 'executing:'
-            log(f'{dr} {shlex.join(cmd)}')
+        if self.verbose and skip:
+            log(f'dry-run: {shlex.join(cmd)}')
         if not skip:
             run = Run(cmd)
             if self.verbose:
