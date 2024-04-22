@@ -1,18 +1,15 @@
-# proxmox-firewall-updater
-This script facilitates automatic updates to firewall aliases based on DNS entries, enabling dynamic FQDN firewall rules in Proxmox environments. It's designed to ensure that firewall configurations remain synchronized with DNS changes, enhancing security and network management.
+# Proxmox Firewall Updater
 
-The alias will only be updated if the IP address of the corresponding domain name changes.
+The Proxmox Firewall Updater is a Python script designed to automate the process of updating firewall aliases based on DNS entries. This ensures that firewall configurations remain synchronized with DNS changes, enhancing security and network management in Proxmox environments.
 
-Please note that this script is designed to create and update firewall aliases based on the configuration file, but it does not delete any existing entries. 
-If an entry in the firewall aliases is no longer needed or if it's not present in the configuration file, 
-the script will not automatically remove it. 
+The script only updates an alias if the IP address of the corresponding domain name changes. It's important to note that while the script creates and updates firewall aliases based on the configuration file, it does not delete any existing entries. If an entry in the firewall aliases is no longer needed or if it's not present in the configuration file, the script will not automatically remove it.
 
 ## Command Line Options
 
-This script supports two command line options: `--dry-run` and `--verbose`, both optional.
+The script supports two optional command line options:
 
-- `--dry-run`: Runs the script without making any changes, useful for testing and debugging.
-- `--verbose`: Provides detailed logging of operations, aiding in understanding the script's behavior and troubleshooting.
+- `--dry-run`: Executes the script without making any changes. This is useful for testing and debugging.
+- `--verbose`: Provides detailed logging of operations, which can aid in understanding the script's behavior and troubleshooting.
 
 You can use both options together for a detailed dry run:
 
@@ -20,59 +17,47 @@ You can use both options together for a detailed dry run:
 python3 update_firewall_aliases.py --dry-run --verbose
 ```
 
-In this mode, the script will print detailed logs of what it would do, without actually making any changes.
+In this mode, the script will print detailed logs of its intended actions without actually making any changes.
 
+## Installation
 
-# Installation
+To get the script on your Proxmox server, use the following command:
 
-Get the script to your Proxmox server in your favorite folder.
-
-```
+```bash
 curl https://raw.githubusercontent.com/simonegiacomelli/proxmox-firewall-updater/main/update_firewall_aliases.py -o update_firewall_aliases.py
 ```
 
-## Cron
+## Scheduling with Cron
 
-The following command will add a cron job to run the script every 5 minutes. 
-It will also log the output of the script to the system log using the `logger` command.
+You can add a cron job to run the script every 5 minutes. The output of the script will be logged to the system log using the `logger` command:
 
-```
+```bash
 (crontab -l 2>/dev/null; echo "*/5 * * * * /usr/bin/env python3 $(pwd)/update_firewall_aliases.py 2>&1 | logger -t update_firewall_aliases.py") | crontab -
 ```
 
-## Without Cron
+## Scheduling without Cron
 
-To avoid the annoying cron jon logs, you can create a script with a loop that runs the script every 5 minutes.
-To activate this script, you can add it to the @reboot cron job.
+If you prefer to avoid cron job logs, you can create a script with a loop that runs the script every 5 minutes. To activate this script, add it to the @reboot cron job:
 
+```bash
+echo "while true; do (python3 $(pwd)/update_firewall_aliases.py | logger -t update_firewall_aliases.py); sleep 300; done" > firewall_aliases_updater_forever.sh
+(crontab -l 2>/dev/null; echo "@reboot /bin/bash -c $(pwd)/firewall_aliases_updater_forever.sh") | crontab -
 ```
-echo "while true; do (python3 $(pwd)/update_firewall_aliases.py | logger -t update_firewall_aliases.py); sleep 300; done" > run_firewall_aliases_updater.sh
-(crontab -l 2>/dev/null; echo "@reboot /usr/bin/env python3 $(pwd)/update_firewall_aliases.sh") | crontab -
-```
 
-# Configuration
+## Configuration
 
-The default configuration file is named `firewall_aliases.ini` and it is searched in the same folder as the script.
+The configuration file is `firewall_aliases.ini` and must be located in the same folder as the script. This INI file contains a list of DNS names and their corresponding firewall aliases. The script will create or update the firewall aliases based on this configuration file. If an alias already exists, its description will be reused.
 
-The configuration file is in INI format and contains a list of DNS names and their corresponding firewall aliases.
-The script will create or update the firewall aliases based on the configuration file.
-The description of the alias will be reused, if the alias already exists.
+Here's an example of a configuration file:
 
-Example of a configuration file:
-
-```
+```ini
 [alias to domain]
-alias_example_com = example.com 
+alias_example_com = example.com
 ```
 
-[//]: # (You can specify the full path of the configuration file using `-ini` option.)
+# Internal Workings
 
-[//]: # (`update_firewall_aliases.py -ini /root/my_custom_config.ini`)
-
-# Documentation of internal workings
-
-This script uses `pvesh` commands to get/create/set pve firewall aliases.
-See below for more details.
+The script uses `pvesh` commands to get, create, and set Proxmox VE firewall aliases. For more details, refer to the Proxmox VE API documentation.
 
 ## pvesh get
 Get a single alias by name:
@@ -100,5 +85,6 @@ name: alias 'alias_example_com' already exists
 `pvesh set cluster/firewall/aliases/alias_example_com -cidr 1.2.3.4 -comment "comments are kept as is"`
 
 
-# Proxmox Forum Interesting thread
-[Firewall Alias with Domainname](https://forum.proxmox.com/threads/firewall-alias-with-domainname.43036/)
+## Relevant Proxmox Forum Thread
+
+For more information, check out this [Proxmox Forum thread](https://forum.proxmox.com/threads/firewall-alias-with-domainname.43036/) on firewall aliases with domain names.
