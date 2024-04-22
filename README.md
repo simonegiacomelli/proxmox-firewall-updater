@@ -25,11 +25,13 @@ In this mode, the script will print detailed logs of what it would do, without a
 
 # Installation
 
-Get the script to your Proxmox server and add a cron job to run it periodically.
+Get the script to your Proxmox server in your favorite folder.
 
 ```
 curl https://raw.githubusercontent.com/simonegiacomelli/proxmox-firewall-updater/main/update_firewall_aliases.py -o update_firewall_aliases.py
 ```
+
+## Cron
 
 The following command will add a cron job to run the script every 5 minutes. 
 It will also log the output of the script to the system log using the `logger` command.
@@ -38,7 +40,15 @@ It will also log the output of the script to the system log using the `logger` c
 (crontab -l 2>/dev/null; echo "*/5 * * * * /usr/bin/env python3 $(pwd)/update_firewall_aliases.py 2>&1 | logger -t update_firewall_aliases.py") | crontab -
 ```
 
+## Without Cron
 
+To avoid the annoying cron jon logs, you can create a script with a loop that runs the script every 5 minutes.
+To activate this script, you can add it to the @reboot cron job.
+
+```
+echo "while true; do (python3 $(pwd)/update_firewall_aliases.py | logger -t update_firewall_aliases.py); sleep 300; done" > run_firewall_aliases_updater.sh
+(crontab -l 2>/dev/null; echo "@reboot /usr/bin/env python3 $(pwd)/update_firewall_aliases.sh") | crontab -
+```
 
 # Configuration
 
