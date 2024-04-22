@@ -23,7 +23,7 @@ curl https://raw.githubusercontent.com/simonegiacomelli/proxmox-firewall-updater
 
 ### Scheduling with Cron
 
-You can add a cron job to run the script every 5 minutes. The output of the script will be logged to the system log using the `logger` command:
+You can add a cron job to run the script every 5 minutes:
 
 ```bash
 (crontab -l 2>/dev/null; echo "*/5 * * * * /usr/bin/env python3 $(pwd)/update_firewall_aliases.py 2>&1 | logger -t update_firewall_aliases.py") | crontab -
