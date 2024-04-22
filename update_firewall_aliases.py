@@ -45,19 +45,26 @@ class Dependencies:
 
 
 def update_aliases(deps: Dependencies):
-    aliases = [entry for entry in deps.alias_list() if entry.domain() is not None]
     if deps.verbose:
         log(VERSION_STRING)
+
+    aliases = [entry for entry in deps.alias_list() if entry.domain() is not None]
+
+    if deps.verbose:
         log(f'found {len(aliases)} aliases to check. dry-run={deps.dry_run}')
         for alias_entry in aliases:
             log(f'{alias_entry.name} {alias_entry.domain} cidr={alias_entry.cidr} {alias_entry.comment}')
 
     for alias_entry in aliases:
-        ip = deps.dns_resolve(alias_entry.domain())
-        if ip and ip != alias_entry.cidr:
-            log(f'updating alias {alias_entry.name} from {alias_entry.cidr} to {ip}')
-            if not deps.dry_run:
-                deps.alias_set(AliasEntry(name=alias_entry.name, cidr=ip, comment=alias_entry.comment))
+        ipaddr = deps.dns_resolve(alias_entry.domain())
+        if ipaddr:
+            if ipaddr != alias_entry.cidr:
+                log(f'updating alias {alias_entry.name} from {alias_entry.cidr} to {ipaddr}')
+                if not deps.dry_run:
+                    deps.alias_set(AliasEntry(name=alias_entry.name, cidr=ipaddr, comment=alias_entry.comment))
+            else:
+                if deps.verbose:
+                    log(f'alias {alias_entry.name} is up to date with {ipaddr}')
         else:
             if deps.verbose:
                 log(f'cannot resolve domain `{alias_entry.domain()}` for alias `{alias_entry.name}`')
