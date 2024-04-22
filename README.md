@@ -27,7 +27,7 @@ To get the script on your Proxmox server, use the following command:
 curl https://raw.githubusercontent.com/simonegiacomelli/proxmox-firewall-updater/main/update_firewall_aliases.py -o update_firewall_aliases.py
 ```
 
-## Scheduling with Cron
+### Scheduling with Cron
 
 You can add a cron job to run the script every 5 minutes. The output of the script will be logged to the system log using the `logger` command:
 
@@ -35,7 +35,7 @@ You can add a cron job to run the script every 5 minutes. The output of the scri
 (crontab -l 2>/dev/null; echo "*/5 * * * * /usr/bin/env python3 $(pwd)/update_firewall_aliases.py 2>&1 | logger -t update_firewall_aliases.py") | crontab -
 ```
 
-## Scheduling without Cron
+### Scheduling without Cron
 
 If you prefer to avoid cron job logs, you can create a script with a loop that runs the script every 5 minutes. To activate this script, add it to the @reboot cron job:
 
@@ -57,9 +57,23 @@ alias_example_com = example.com
 
 # Internal Workings
 
+## Automated Tests
+
+This project includes comprehensive automated tests to ensure its reliability and correctness. These tests cover various scenarios and edge cases, providing a robust safety net for ongoing development.
+
+The tests are written using Python's built-in `unittest` module, and they thoroughly test the functionality of the script, including the parsing of the configuration file, DNS resolution, and the creation and updating of firewall aliases.
+
+To run the tests, use the following command:
+
+```bash
+python3 -m unittest update_firewall_aliases_test.py
+```
+
+## Proxmox API
+
 The script uses `pvesh` commands to get, create, and set Proxmox VE firewall aliases. For more details, refer to the Proxmox VE API documentation.
 
-## pvesh get
+### pvesh get
 Get a single alias by name:
 
 `pvesh get cluster/firewall/aliases/alias_example_com --output-format json`
@@ -70,7 +84,7 @@ Example output:
 {"cidr":"1.2.3.4","comment":"dynamic ip for example.com","ipversion":4,"name":"alias_example_com"}
 ```
 
-## pvesh create
+### pvesh create
 `pvesh create cluster/firewall/aliases -name alias_example_com -cidr 1.2.3.4 -comment "created by proxmox-firewall-updater"`
 - If it succeeds, it will return empty output and 0 exit code.
 - If it fails, it will return error message and non-zero exit code.
@@ -81,7 +95,7 @@ name: alias 'alias_example_com' already exists
 ... (truncated for brevity)
 ```
 
-## pvesh set
+### pvesh set
 `pvesh set cluster/firewall/aliases/alias_example_com -cidr 1.2.3.4 -comment "comments are kept as is"`
 
 
