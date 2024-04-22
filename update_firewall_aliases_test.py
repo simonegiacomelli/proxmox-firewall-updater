@@ -4,10 +4,10 @@ from __future__ import annotations
 import unittest
 from typing import Dict, List
 
-from update_firewall_aliases import Dependencies, AliasEntry, update_aliases
+from update_firewall_aliases import Dependencies, AliasEntry, update_aliases, alias_list_to_typed
 
 
-class update_domain_entry_TestCase(unittest.TestCase):
+class update_aliases_TestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         self.deps = DependenciesFake()
@@ -95,3 +95,30 @@ class DependenciesFake(Dependencies):
 
     def dns_resolve(self, domain: str) -> str | None:
         return self.dns_entries.get(domain, None)
+
+
+class alias_list_to_typed_TestCase(unittest.TestCase):
+
+    def test_empty(self):
+        # GIVEN
+        alias_list = '[]'
+
+        # WHEN
+        actual = alias_list_to_typed(alias_list)
+
+        # THEN
+        self.assertEqual([], actual)
+
+    def test_one(self):
+        # GIVEN
+        alias_list = '[{"cidr":"1.2.3.4","comment":"comment foo #resolve: example.com","digest":"48ba54e4cabe338b1cb490bb9c5b617f61bd4212","ipversion":4,"name":"alias_example_com"},{"cidr":"0.0.0.0","comment":"comment bar #resolve: example.net","digest":"48ba54e4cabe338b1cb490bb9c5b617f61bd4212","ipversion":4,"name":"alias_example_net"}]'
+
+        # WHEN
+        actual = alias_list_to_typed(alias_list)
+
+        # THEN
+        expect = [
+            AliasEntry(name='alias_example_com', cidr='1.2.3.4', comment='comment foo #resolve: example.com'),
+            AliasEntry(name='alias_example_net', cidr='0.0.0.0', comment='comment bar #resolve: example.net')
+        ]
+        self.assertEqual(expect, actual)
