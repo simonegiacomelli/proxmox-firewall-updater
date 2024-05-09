@@ -19,7 +19,7 @@ VERSION_STRING = f'{Path(__file__).name} version 2.0.5'
 class AliasEntry:
     name: str
     cidr: str
-    comment: str
+    comment: str | None
 
     def domain(self) -> str | None:
         try:
@@ -97,7 +97,7 @@ class Run:
 
 def alias_list_to_typed(alias_list: str) -> List[AliasEntry]:
     j = json.loads(alias_list)
-    return [AliasEntry(name=alias['name'], cidr=alias['cidr'], comment=alias['comment']) for alias in j]
+    return [AliasEntry(name=alias['name'], cidr=alias['cidr'], comment=alias.get('comment', None)) for alias in j]
 
 
 class ProdDependencies(Dependencies):

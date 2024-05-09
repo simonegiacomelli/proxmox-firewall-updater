@@ -92,6 +92,17 @@ class update_aliases_TestCase(unittest.TestCase):
         # THEN
         self.assertEqual(alias_entry, self.deps.alias_entries['alias1'])
 
+    def test_no_comment__should_not_change_the_alias(self):
+        # GIVEN
+        expect = AliasEntry(name='alias1', cidr='0.0.0.0', comment=None)
+        self.deps.alias_set(expect)
+
+        # WHEN
+        update_aliases(self.deps)
+
+        # THEN
+        actual = self.deps.alias_entries['alias1']
+        self.assertEqual(expect, actual)
 
 class DependenciesFake(Dependencies):
 
@@ -135,5 +146,19 @@ class alias_list_to_typed_TestCase(unittest.TestCase):
         expect = [
             AliasEntry(name='alias_example_com', cidr='1.2.3.4', comment='comment foo #resolve: example.com'),
             AliasEntry(name='alias_example_net', cidr='0.0.0.0', comment='comment bar #resolve: example.net')
+        ]
+        self.assertEqual(expect, actual)
+
+    def test_entry_with_no_comment_or_null(self):
+        # GIVEN
+        alias_list = '[{"cidr":"1.2.3.4","comment":"comment foo #resolve: example.com","digest":"48ba54e4cabe338b1cb490bb9c5b617f61bd4212","ipversion":4,"name":"alias_example_com"},{"cidr":"0.0.0.0","digest":"48ba54e4cabe338b1cb490bb9c5b617f61bd4212","ipversion":4,"name":"alias_example_net"}]'
+
+        # WHEN
+        actual = alias_list_to_typed(alias_list)
+
+        # THEN
+        expect = [
+            AliasEntry(name='alias_example_com', cidr='1.2.3.4', comment='comment foo #resolve: example.com'),
+            AliasEntry(name='alias_example_net', cidr='0.0.0.0', comment=None)
         ]
         self.assertEqual(expect, actual)
