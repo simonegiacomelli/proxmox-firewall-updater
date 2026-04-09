@@ -34,11 +34,11 @@ If you want to avoid this, you can use the scheduling explained in the next sect
 
 ### Scheduling without Cron
 
-If you prefer to avoid verbose cron job logs, you can create a bash script with a loop that runs the python script every 5 minutes. 
+If you prefer to avoid verbose cron job logs, you can create a bash script with a loop that runs the python script every minute. 
 To activate this script, add it to the @reboot cron job:
 
 ```bash
-echo "while true; do (python3 $(pwd)/update_firewall_aliases.py | logger -t update_firewall_aliases.py); sleep 300; done" > firewall_aliases_updater_forever.sh
+echo "while true; do (python3 $(pwd)/update_firewall_aliases.py | logger -t update_firewall_aliases.py); sleep 60; done" > firewall_aliases_updater_forever.sh
 chmod +x firewall_aliases_updater_forever.sh
 (crontab -l 2>/dev/null; echo "@reboot /bin/bash -c $(pwd)/firewall_aliases_updater_forever.sh &") | crontab -
 ```
